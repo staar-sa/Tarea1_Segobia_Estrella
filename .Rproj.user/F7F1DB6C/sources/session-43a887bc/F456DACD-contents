@@ -1,0 +1,127 @@
+---
+title: "Problema 1: Análisis de Expresión Génica Diferencial para Microarreglos con GEO2R"
+author: "Estrella Segobia"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Instalación y carga de paquetes
+
+```{r}
+# Verificar e instalar paquetes necesarios
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+
+to_install <- c("GEOquery", "limma", "umap", "Biobase")
+new_packages <- to_install[!(to_install %in% installed.packages()[,"Package"])]
+if(length(new_packages)) BiocManager::install(new_packages)
+
+# Cargar librerías
+library(GEOquery)
+library(limma)
+library(umap)
+library(Biobase)
+```
+
+## 2. Carga y Preprocesamiento de Datos
+
+```{r}
+# Cargar datos de GEO
+gset <- getGEO("GSE68849", GSEMatrix = TRUE, AnnotGPL = TRUE)
+if (length(gset) > 1) idx <- grep("GPL10558", attr(gset, "names")) else idx <- 1
+gset <- gset[[idx]]
+
+# Ajustar nombres de columnas
+fvarLabels(gset) <- make.names(fvarLabels(gset))
+
+# Definir grupos
+gsms <- "1010101010"
+sml <- strsplit(gsms, split = "")[[1]]
+
+gs <- factor(sml)
+groups <- c("GRIPE_A", "SIN_CONTROL")
+levels(gs) <- groups
+gset$group <- gs
+
+design <- model.matrix(~group + 0, gset)
+colnames(design) <- levels(gs)
+
+# Transformación log2
+ex <- exprs(gset)
+if (max(ex, na.rm = TRUE) > 100) {
+  ex[ex <= 0] <- NA
+  exprs(gset) <- log2(ex)
+}
+
+gset <- gset[complete.cases(exprs(gset)), ]
+```
+
+## 3. Análisis de Expresión Génica Diferencial
+
+```{r}
+# Análisis con limma
+fit <- lmFit(gset, design)
+cont.matrix <- makeContrasts(contrasts = "GRIPE_A-SIN_CONTROL", levels = design)
+fit2 <- contrasts.fit(fit, cont.matrix)
+fit2 <- eBayes(fit2)
+
+# Resultados
+summary(decideTests(fit2, adjust.method = "fdr", p.value = 0.05, lfc = 0))
+```
+
+## 4. Visualización de Resultados
+
+```{r}
+# Histograma de valores p ajustados
+hist(topTable(fit2, adjust = "fdr", sort.by = "B", number = 250)$adj.P.Val, 
+     col = "grey", border = "white", xlab = "P-adj", ylab = "Genes", 
+     main = "Distribución de P-adj")
+
+# Venn diagram
+dT <- decideTests(fit2, adjust.method = "fdr", p.value = 0.05, lfc = 0)
+vennDiagram(dT)
+
+# MD plot
+plotMD(fit2, column = 1, status = dT[,1], legend = FALSE, pch = 20)
+abline(h = 0)
+```
+
+### 4.1. UMAP
+
+```{r}
+ex <- exprs(gset)
+ump <- umap(t(ex), n_neighbors = 5, random_state = 123)
+plot(ump$layout, main = "UMAP", xlab = "", ylab = "", col = gs, pch = 20)
+```
+
+### 4.2. Volcano Plot
+
+```{r}
+volcanoplot(fit2, coef = 1, main = "Volcano Plot", pch = 20, 
+            highlight = length(which(dT[,1] != 0)), names = rep("+", nrow(fit2)))
+```
+
+## 5. Variaciones en el Análisis
+
+```{r}
+# Cambiando criterio de corte
+summary(decideTests(fit2, adjust.method = "fdr", p.value = 0.01, lfc = 1))
+summary(decideTests(fit2, adjust.method = "none", p.value = 0.05, lfc = 0.5))
+```
+
+## 6. Interpretación y Discusión
+
+- **Número de genes diferencialmente expresados**: Dependiendo del criterio de selección aplicado, el número varía. 
+- **Comparación con el artículo original**: Se deben evaluar los genes más relevantes y compararlos con el estudio original, ya que la cantidad de genes representados son bastantes. Se necesitaria un analisis de ontologia de genes para entender el verdadero efecto de este.
+- **Posibles discrepancias**: Factores como diferencias en la normalización de datos o filtrado pueden afectar los resultados.
+
+**Cabe recalcar que este analisis y programa, ya estaba indicado en GEO, al seleccionar los genes, solo se replico y se interpretaron los posibles resultados**
+
+
+
+### Referencia:
+_Referencia del artículo original GSE68849_.
+Bajwa G, DeBerardinis RJ, Shao B, Hall B, Farrar JD, Gill MA. Cutting Edge: Critical Role of Glycolysis in Human Plasmacytoid Dendritic Cell Antiviral Responses. J Immunol. 2016 Mar 1;196(5):2004-9. doi: 10.4049/jimmunol.1501557. Epub 2016 Jan 29. PMID: 26826244; PMCID: PMC4761472.

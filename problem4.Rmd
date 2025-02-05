@@ -1,0 +1,41 @@
+---
+title: "Problema 4: Análisis de Enriquecimiento en Gene Ontology"
+author: "Estrella Segobia"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introducción
+
+El análisis de enriquecimiento en **Gene Ontology (GO)** es una herramienta que permite identificar categorías funcionales sobrerrepresentadas dentro de un conjunto de genes. Este enfoque es especialmente útil cuando trabajamos con datos de expresión génica, ya que nos ayuda a comprender mejor los procesos biológicos en los que están involucrados nuestros genes de interés. 
+
+Para entenderlo de manera más sencilla, podemos compararlo con actividades cotidianas. Así como agrupamos tareas diarias en categorías como ejercicio, cocina o estudio, los genes también pueden organizarse en categorías funcionales que reflejan su papel en la célula. En este documento, exploraremos esta idea a través de ejemplos y analogías que nos ayudarán a visualizar mejor el concepto de enriquecimiento en GO.
+
+## Ejemplo Seleccionado: Rutina de Ejercicio
+
+En una rutina de ejercicio, diferentes actividades como correr, levantar pesas y hacer yoga pueden agruparse dentro de la categoría "Salud y Fitness". Esto es similar a cómo los genes involucrados en la respiración celular pueden agruparse en la categoría GO "metabolismo energético".
+
+El análisis de enriquecimiento nos ayuda a identificar qué procesos biológicos predominan en un conjunto de genes, del mismo modo que podemos analizar nuestras actividades y notar que priorizamos el ejercicio.
+
+## Mi Analogía: Baile
+
+### Acciones específicas (“genes”):
+- Aprender coreografías
+- Practicar movimientos técnicos
+- Bailar en presentaciones
+- Hacer calentamientos y estiramientos
+- Improvisar pasos al ritmo de la música
+
+### Categoría General (“categoría GO”): Expresión Artística y Movimiento
+
+Esta analogía ilustra el enriquecimiento porque, al analizar mis actividades, puedo ver que la mayoría están relacionadas con la expresión artística a través del baile. 
+
+## Conclusión
+
+El análisis de enriquecimiento en Gene Ontology es una estrategia que nos permite interpretar datos de expresión génica y descubrir patrones biológicos relevantes. Nos permite identificar *procesos celulares* clave que pueden estar influenciando ciertas *condiciones biológicas*.
+
+Al igual que en nuestra vida diaria categorizamos actividades para entender mejor nuestras rutinas y prioridades, en biología se organizan genes en categorías GO para comprender mejor su función y su impacto en los sistemas biológicos. A través de analogías como la rutina de ejercicio o el baile, podemos visualizar cómo funciona este método.
